@@ -1,5 +1,6 @@
 # pyright to gitlab
-Simple Python script to convert a pyright --outputjson to a gitlab code-quality report.
+Simple zero-dependency Python script to convert a pyright --outputjson to a gitlab 
+code-quality report.
 
 ## Usage
 Run the script with the path to the pyright output file:
