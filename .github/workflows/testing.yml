@@ -27,7 +27,7 @@ jobs:
       - name: 'Ruff check'
         run: ruff check
   test:
-    name: Test Python 🐍 application
+    name: 🐍
     strategy:
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
@@ -35,13 +35,13 @@ jobs:
         # Add all python versions for ubuntu.
         include:
           - os: "ubuntu-latest"
-            python-version: "3.6"
+            python-version: "3.8"
           - os: "ubuntu-latest"
             python-version: "3.10"
           - os: "ubuntu-latest"
             python-version: "3.11"
           - os: "ubuntu-latest"
-            python-version: "3.14"
+            python-version: "3.13"
             coverage: true
     runs-on: ${{ matrix.os }}
     steps:
@@ -57,7 +57,7 @@ jobs:
       - name: Run pytest
         run: |
           echo ${{ github.ref }}
-          uv run --python ${{ matrix.python-version }} pytest src/
+          uv run --python ${{ matrix.python-version }} pytest tests/
       - name: Code Coverage Summary Report
         if: matrix.coverage==true
         uses: irongut/CodeCoverageSummary@v1.3.0

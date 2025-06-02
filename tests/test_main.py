@@ -1,11 +1,13 @@
 """Tests for the pyright_to_gitlab module."""
 
+from __future__ import annotations
+
 import io
 import json
 
 import pytest
 
-from pyright_to_gitlab import _pyright_to_gitlab, main
+from pyright_to_gitlab import main
 
 PYRIGHT = {
     "version": "1.1.385",

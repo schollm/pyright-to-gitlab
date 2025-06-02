@@ -59,7 +59,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    print(_pyright_to_gitlab(prefix=args.prefix))
+    print(_pyright_to_gitlab(prefix=args.prefix))  # noqa: T201
 
 
 if __name__ == "__main__":  # pragma: no cover
