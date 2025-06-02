@@ -27,7 +27,7 @@ jobs:
       - name: 'Ruff check'
         run: ruff check
   test:
-    name: Test Python 🐍 application
+    name: 🐍
     strategy:
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
