@@ -41,7 +41,7 @@ jobs:
           - os: "ubuntu-latest"
             python-version: "3.11"
           - os: "ubuntu-latest"
-            python-version: "3.14"
+            python-version: "3.13"
             coverage: true
     runs-on: ${{ matrix.os }}
     steps:
