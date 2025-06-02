@@ -1,5 +1,7 @@
 """Tests for the pyright_to_gitlab module."""
 
+from __future__ import annotations
+
 import io
 import json
 
