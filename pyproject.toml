@@ -1,0 +1,58 @@
+[project]
+name = "pyright-to-gitlab"
+version = "1.0.1"
+description = "Convert Pyright JSON output to GitLab CI/CD format"
+readme = "README.md"
+requires-python = ">=3.6"
+authors = [
+    { name = "Micha Schöll", email = "" }
+]
+license = { file = "LICENSE" }
+[project.scripts]
+pyrigh-to-gitlab = 'pyright_to_gitlab:main'
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyright_to_gitlab.py"]
+
+[dependency-groups]
+dev = [
+    "pyright>=0.0.13.post0",
+    "pytest>=7.0.1",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.0.17",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D213",  #  `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible.
+    "D203",  # `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible.
+    "COM812", # Missing trailing comma in a single-line list - already applied by ruff format.
+    "D205", # 1 blank line required between summary line and description: ruff format disagrees.
+
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    # at least this three should be fine in tests:
+    "S101", # asserts allowed in tests...
+    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+]
+
+[tool.pytest.ini_options]
+addopts = """
+  --junit-xml=.out/junit-pytest.xml
+  --cov=pyright_to_gitlab
+  --cov-report=xml:.out/coverage.xml
+  --cov-report=html:.out/coverage-html
+  --cov-report term-missing
+  --cov-branch
+"""
