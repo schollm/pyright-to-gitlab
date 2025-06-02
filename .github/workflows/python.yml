@@ -4,11 +4,11 @@ on: [push]
 
 jobs:
   testing:
-     name: Testing
+     name: 🧪
      uses: ./.github/workflows/testing.yml
 
   build:
-    name: Build package 📦
+    name: Build 🐍📦
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
 
   publish-to-pypi:
     name: >-
-      Publish Python 🐍 distribution 📦 to PyPI
+      🐍📦 to PyPI
     needs: [testing]
     if: success() && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -49,8 +49,7 @@ jobs:
 
   github-release:
     name: >-
-      Sign the Python 🐍 distribution 📦 with Sigstore
-      and upload them to GitHub Release
+      Sign 🐍📦 with Sigstore and upload them to GitHub Release
     needs: [testing]
     if: success() && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
