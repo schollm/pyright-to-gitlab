@@ -4,10 +4,11 @@ import argparse
 import hashlib
 import json
 import sys
-from typing import cast
+import textwrap
+from typing import TextIO, cast
 
 
-def _pyright_to_gitlab(prefix: str = "") -> str:
+def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     """Convert pyright.json output to GitLab Code Quality report format.
 
     :arg prefix: A string to prepend to each file path in the output.
@@ -17,7 +18,7 @@ def _pyright_to_gitlab(prefix: str = "") -> str:
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
-    data = cast("dict", json.load(sys.stdin))
+    data = cast("dict", json.load(input_))
 
     issues = []
     for issue in data.get("generalDiagnostics", []):
@@ -49,17 +50,42 @@ def _pyright_to_gitlab(prefix: str = "") -> str:
 def main() -> None:
     """Parse arguments and call the conversion function."""
     parser = argparse.ArgumentParser(
-        description="Convert pyright.json to GitLab Code Quality report."
+        description=textwrap.dedent("""
+        Convert pyright.json to GitLab Code Quality report.
+        By default, reads from stdin and writes to stdout."""),
+        epilog=textwrap.dedent(
+            """
+
+        Example usage:
+        > python pyright . --outputjson | pyright-to-gitlab > gitlab_code_quality.json
+        > pyright-to-gitlab -i pyright.json -o gitlab_code_quality.json
+        """
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "-i",
+        "--input",
+        type=argparse.FileType("r"),
+        default=sys.stdin,
+        help="Input file (default: stdin)",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="Output file (default: stdout)",
     )
     parser.add_argument(
         "--prefix",
         type=str,
         default="",
-        help="Prefix to add to each file (default: empty string)",
+        help="Prefix to add to each file entry. This can be used if pyright is run"
+        " from a subdirectory of the repository. (default: empty string)",
     )
     args = parser.parse_args()
-
-    print(_pyright_to_gitlab(prefix=args.prefix))  # noqa: T201
+    args.output.write(_pyright_to_gitlab(input_=args.input, prefix=args.prefix))
 
 
 if __name__ == "__main__":  # pragma: no cover

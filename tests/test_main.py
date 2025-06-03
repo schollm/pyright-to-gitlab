@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import io
 import json
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 import pytest
 
@@ -91,6 +95,37 @@ def test(
     main()
     captured = capsys.readouterr()
     assert json.loads(captured.out) == gitlab
+
+
+@pytest.mark.parametrize(
+    ("pyright", "gitlab"),
+    [
+        ({}, []),  # Empty input should yield empty output
+        (PYRIGHT, GITLAB),
+    ],
+)
+def test_input_output_file(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    pyright: dict,
+    gitlab: list[dict],
+) -> None:
+    """Test that the pyright.json is converted to GitLab Code Quality report format."""
+    input_file = tmp_path / "pyright.json"
+    input_file.write_text(json.dumps(pyright))
+    output_file = tmp_path / "gitlab.json"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "pyright_to_gitlab.py",
+            "-i",
+            input_file.as_posix(),
+            "-o",
+            output_file.as_posix(),
+        ],
+    )
+    main()
+    assert json.loads(output_file.read_text("utf-8")) == gitlab
 
 
 @pytest.mark.parametrize(
