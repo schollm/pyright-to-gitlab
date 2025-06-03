@@ -1,6 +1,6 @@
 [project]
 name = "pyright-to-gitlab"
-version = "1.0.2"
+version = "1.1.0"
 description = "Convert Pyright JSON output to GitLab CI/CD format"
 readme = "README.md"
 requires-python = ">=3.6"
