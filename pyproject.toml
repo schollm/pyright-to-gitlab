@@ -3,7 +3,7 @@ name = "pyright-to-gitlab"
 version = "1.1.0"
 description = "Convert Pyright JSON output to GitLab CI/CD format"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 authors = [{ name = "Micha Schöll", email = "" }]
 license = "MIT"
 license-files = ["LICENSE"]
