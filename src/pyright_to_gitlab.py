@@ -1,4 +1,5 @@
 """Convert pyright.json output to GitLab Code Quality report format."""
+from __future__ import annotations
 
 import argparse
 import hashlib
