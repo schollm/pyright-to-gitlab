@@ -7,7 +7,7 @@ import hashlib
 import json
 import sys
 import textwrap
-from typing import Any, TextIO, TypedDict, cast
+from typing import Literal, TextIO, TypedDict, cast
 
 
 ### Typing for PyRight Issue
@@ -29,7 +29,7 @@ class PyrightIssue(TypedDict):
     """Single Pyright Issue."""
 
     file: str
-    severity: str
+    severity: Literal["error", "warning", "information"]
     message: str
     rule: str
     range: PyrightRange
@@ -61,7 +61,7 @@ class GitlabIssue(TypedDict):
     """Single Gitlab Issue."""
 
     description: str
-    severity: str
+    severity: Literal["major", "minor"]
     fingerprint: str
     check_name: str
     location: GitlabIssueLocation
