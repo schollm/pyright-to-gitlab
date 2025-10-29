@@ -30,10 +30,10 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
 
 def _pyright_issue_to_gitlab(issue: dict[str, Any], prefix: str) -> dict[str, Any]:
     """Convert a single issue to gitlab.
-    
+
     :param issue: A pyright single issue.
     :param prefix: The path prefix.
-    :returns: A gitlab single issue. 
+    :returns: A gitlab single issue.
     """
     file = issue["file"]
     start, end = issue["range"]["start"], issue["range"]["end"]
