@@ -5,7 +5,7 @@ import hashlib
 import json
 import sys
 import textwrap
-from typing import TextIO, cast
+from typing import Any, TextIO, cast
 
 
 def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
@@ -21,15 +21,20 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     data = cast("dict", json.load(input_))
     return json.dumps(
         [
-            _pyright_issue_to_gitlab(issue)
+            _pyright_issue_to_gitlab(issue, prefix)
             for issue in data.get("generalDiagnostics", [])
         ],
         indent=2,
     )
 
 
-def _pyright_issue_to_gitlab(issue: dict[str, Any]) -> dict[str, Any]:
-    """Convert a single issue to gitlab."""
+def _pyright_issue_to_gitlab(issue: dict[str, Any], prefix: str) -> dict[str, Any]:
+    """Convert a single issue to gitlab.
+    
+    :param issue: A pyright single issue.
+    :param prefix: The path prefix.
+    :returns: A gitlab single issue. 
+    """
     file = issue["file"]
     start, end = issue["range"]["start"], issue["range"]["end"]
     rule = "pyright: " + issue.get("rule", "")
