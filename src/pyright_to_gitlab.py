@@ -19,33 +19,37 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
     data = cast("dict", json.load(input_))
+    return json.dumps(
+        [
+            _pyright_issue_to_gitlab(issue)
+            for issue in data.get("generalDiagnostics", [])
+        ],
+        indent=2,
+    )
 
-    issues = []
-    for issue in data.get("generalDiagnostics", []):
-        file = issue["file"]
-        start, end = issue["range"]["start"], issue["range"]["end"]
-        rule = "pyright: " + issue.get("rule", "")
-        severity = "major" if issue["severity"] == "error" else "minor"
-        # unique fingerprint
-        fp_str = "--".join([str(start), str(end), rule])
 
-        issues.append(
-            {
-                "description": issue["message"],
-                "severity": severity,
-                "fingerprint": hashlib.sha3_224(fp_str.encode()).hexdigest(),
-                "check_name": rule,
-                "location": {
-                    "path": f"{prefix}{file}",
-                    "positions": {
-                        "begin": {"line": start["line"], "column": start["character"]},
-                        "end": {"line": end["line"], "column": end["character"]},
-                    },
-                },
-            }
-        )
-    return json.dumps(issues, indent=2)
+def _pyright_issue_to_gitlab(issue: dict[str, Any]) -> dict[str, Any]:
+    """Convert a single issue to gitlab."""
+    file = issue["file"]
+    start, end = issue["range"]["start"], issue["range"]["end"]
+    rule = "pyright: " + issue.get("rule", "")
+    severity = "major" if issue["severity"] == "error" else "minor"
+    # unique fingerprint
+    fp_str = "--".join([str(start), str(end), rule])
 
+    return {
+        "description": issue["message"],
+        "severity": severity,
+        "fingerprint": hashlib.sha3_224(fp_str.encode()).hexdigest(),
+        "check_name": rule,
+        "location": {
+            "path": f"{prefix}{file}",
+            "positions": {
+                "begin": {"line": start["line"], "column": start["character"]},
+                "end": {"line": end["line"], "column": end["character"]},
+            },
+        },
+    }
 
 def main() -> None:
     """Parse arguments and call the conversion function."""
