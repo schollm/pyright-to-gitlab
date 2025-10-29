@@ -1,13 +1,73 @@
 """Convert pyright.json output to GitLab Code Quality report format."""
 
+from __future__ import annotations
+
 import argparse
 import hashlib
 import json
 import sys
 import textwrap
-from typing import TextIO, cast
+from typing import Literal, TextIO, TypedDict, cast
 
 
+### Typing for PyRight Issue
+class PyrightRangeElement(TypedDict):
+    """Pyright Range Element (part of Range)."""
+
+    line: int
+    character: int
+
+
+class PyrightRange(TypedDict):
+    """Pyright Range (Part of Issue)."""
+
+    start: PyrightRangeElement
+    end: PyrightRangeElement
+
+
+class PyrightIssue(TypedDict):
+    """Single Pyright Issue."""
+
+    file: str
+    severity: Literal["error", "warning", "information"]
+    message: str
+    rule: str
+    range: PyrightRange
+
+
+### Typing for Gitlab Issue
+class GitlabIssuePositionLocation(TypedDict):
+    """Single Gitlab Position (Part of Position)."""
+
+    line: int
+    column: int
+
+
+class GitlabIssuePositions(TypedDict):
+    """Gitlab ranged Position within a file (Part of Location)."""
+
+    begin: GitlabIssuePositionLocation
+    end: GitlabIssuePositionLocation
+
+
+class GitlabIssueLocation(TypedDict):
+    """Gitlab location (Part of Issue)."""
+
+    path: str
+    positions: GitlabIssuePositions
+
+
+class GitlabIssue(TypedDict):
+    """Single Gitlab Issue."""
+
+    description: str
+    severity: Literal["major", "minor"]
+    fingerprint: str
+    check_name: str
+    location: GitlabIssueLocation
+
+
+### Functions
 def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     """Convert pyright.json output to GitLab Code Quality report format.
 
@@ -19,32 +79,44 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
     data = cast("dict", json.load(input_))
+    return json.dumps(
+        [
+            _pyright_issue_to_gitlab(issue, prefix)
+            for issue in data.get("generalDiagnostics", [])
+        ],
+        indent=2,
+    )
 
-    issues = []
-    for issue in data.get("generalDiagnostics", []):
-        file = issue["file"]
-        start, end = issue["range"]["start"], issue["range"]["end"]
-        rule = "pyright: " + issue.get("rule", "")
-        severity = "major" if issue["severity"] == "error" else "minor"
-        # unique fingerprint
-        fp_str = "--".join([str(start), str(end), rule])
 
-        issues.append(
-            {
-                "description": issue["message"],
-                "severity": severity,
-                "fingerprint": hashlib.sha3_224(fp_str.encode()).hexdigest(),
-                "check_name": rule,
-                "location": {
-                    "path": f"{prefix}{file}",
-                    "positions": {
-                        "begin": {"line": start["line"], "column": start["character"]},
-                        "end": {"line": end["line"], "column": end["character"]},
-                    },
-                },
-            }
-        )
-    return json.dumps(issues, indent=2)
+def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
+    """Convert a single issue to gitlab.
+
+    :param issue: A pyright single issue.
+    :param prefix: The path prefix.
+    :returns: A gitlab single issue.
+    """
+    start, end = issue["range"]["start"], issue["range"]["end"]
+    rule = "pyright: " + issue.get("rule", "")
+    # unique fingerprint
+    fp_str = "--".join([str(start), str(end), rule])
+
+    return GitlabIssue(
+        description=issue["message"],
+        severity="major" if issue["severity"] == "error" else "minor",
+        fingerprint=hashlib.sha3_224(fp_str.encode()).hexdigest(),
+        check_name=rule,
+        location=GitlabIssueLocation(
+            path=f"{prefix}{issue['file']}",
+            positions=GitlabIssuePositions(
+                begin=GitlabIssuePositionLocation(
+                    line=start["line"], column=start["character"]
+                ),
+                end=GitlabIssuePositionLocation(
+                    line=end["line"], column=end["character"]
+                ),
+            ),
+        ),
+    )
 
 
 def main() -> None:
