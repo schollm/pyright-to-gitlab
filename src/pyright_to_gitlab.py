@@ -82,6 +82,7 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
         This is useful if the application is in a subdirectory of the repository.
     :return: JSON of issues in GitLab Code Quality report format.
     :raises ValueError: If input is not a JSON object.
+    :raises TypeError: If input JSON is not an object.
 
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
@@ -133,10 +134,10 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
             path=f"{prefix}{issue['file']}" if "file" in issue else "<anonymous>",
             positions=GitlabIssuePositions(
                 begin=GitlabIssuePositionLocation(
-                    line=start.get("line", -1), column=start.get("character", -1)
+                    line=start.get("line", 0), column=start.get("character", 0)
                 ),
                 end=GitlabIssuePositionLocation(
-                    line=end.get("line", -1), column=end.get("character", -1)
+                    line=end.get("line", 0), column=end.get("character", 0)
                 ),
             ),
         ),

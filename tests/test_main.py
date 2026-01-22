@@ -287,7 +287,7 @@ def test_missing_general_diagnostics(
 def test_missing_range_field(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
 ) -> None:
-    """Test that missing range field defaults to -1 for all positions."""
+    """Test that missing range field defaults to 0 for all positions."""
     pyright = {
         "generalDiagnostics": [
             {
@@ -305,16 +305,16 @@ def test_missing_range_field(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["location"]["positions"]["begin"]["line"] == -1
-    assert result[0]["location"]["positions"]["begin"]["column"] == -1
-    assert result[0]["location"]["positions"]["end"]["line"] == -1
-    assert result[0]["location"]["positions"]["end"]["column"] == -1
+    assert result[0]["location"]["positions"]["begin"]["line"] == 0
+    assert result[0]["location"]["positions"]["begin"]["column"] == 0
+    assert result[0]["location"]["positions"]["end"]["line"] == 0
+    assert result[0]["location"]["positions"]["end"]["column"] == 0
 
 
 def test_missing_start_in_range(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
 ) -> None:
-    """Test that missing start field in range defaults to -1."""
+    """Test that missing start field in range defaults to 0."""
     pyright = {
         "generalDiagnostics": [
             {
@@ -336,7 +336,7 @@ def test_missing_start_in_range(
     result = json.loads(captured.out)
     assert len(result) == 1
     assert result[0]["location"]["positions"] == {
-        "begin": {"line": -1, "column": -1},
+        "begin": {"line": 0, "column": 0},
         "end": {"line": 10, "column": 20},
     }
 
@@ -344,7 +344,7 @@ def test_missing_start_in_range(
 def test_missing_end_in_range(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
 ) -> None:
-    """Test that missing end field in range defaults to -1."""
+    """Test that missing end field in range defaults to 0."""
     pyright = {
         "generalDiagnostics": [
             {
@@ -367,14 +367,14 @@ def test_missing_end_in_range(
     assert len(result) == 1
     assert result[0]["location"]["positions"] == {
         "begin": {"line": 5, "column": 10},
-        "end": {"line": -1, "column": -1},
+        "end": {"line": 0, "column": 0},
     }
 
 
 def test_missing_line_in_start(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
 ) -> None:
-    """Test that missing line field in start position defaults to -1."""
+    """Test that missing line field in start position defaults to 0."""
     pyright = {
         "generalDiagnostics": [
             {
@@ -399,7 +399,7 @@ def test_missing_line_in_start(
     result = json.loads(captured.out)
     assert len(result) == 1
     assert result[0]["location"]["positions"] == {
-        "begin": {"line": -1, "column": 10},
+        "begin": {"line": 0, "column": 10},
         "end": {"line": 10, "column": 20},
     }
 
@@ -407,7 +407,7 @@ def test_missing_line_in_start(
 def test_missing_character_in_end(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
 ) -> None:
-    """Test that missing character field in end position defaults to -1."""
+    """Test that missing character field in end position defaults to 0."""
     pyright = {
         "generalDiagnostics": [
             {
@@ -431,7 +431,7 @@ def test_missing_character_in_end(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["location"]["positions"]["end"] == {"line": 10, "column": -1}
+    assert result[0]["location"]["positions"]["end"] == {"line": 10, "column": 0}
 
 
 def test_missing_file_field(
@@ -511,8 +511,8 @@ def test_completely_empty_issue(
             "location": {
                 "path": "<anonymous>",
                 "positions": {
-                    "begin": {"line": -1, "column": -1},
-                    "end": {"line": -1, "column": -1},
+                    "begin": {"line": 0, "column": 0},
+                    "end": {"line": 0, "column": 0},
                 },
             },
         }
