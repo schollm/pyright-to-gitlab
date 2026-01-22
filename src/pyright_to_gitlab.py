@@ -7,7 +7,7 @@ import hashlib
 import json
 import sys
 import textwrap
-from typing import Literal, TextIO, TypedDict, cast
+from typing import Literal, TextIO, TypedDict
 
 
 ### Typing for PyRight Issue
@@ -26,12 +26,16 @@ class PyrightRange(TypedDict):
 
 
 class PyrightIssue(TypedDict):
-    """Single Pyright Issue."""
+    """Single Pyright Issue.
+
+    Note: 'rule' field is optional in practice but marked as required in type hints.
+    Runtime code handles this with defensive .get() calls.
+    """
 
     file: str
     severity: Literal["error", "warning", "information"]
     message: str
-    rule: str
+    rule: str  # Optional in practice, handled via .get() at runtime
     range: PyrightRange
 
 
@@ -71,14 +75,28 @@ class GitlabIssue(TypedDict):
 def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     """Convert pyright.json output to GitLab Code Quality report format.
 
+    Line numbers from Pyright are passed through unchanged (0-based per LSP spec).
+    GitLab expects the same format, so no conversion is needed.
+
     :arg prefix: A string to prepend to each file path in the output.
         This is useful if the application is in a subdirectory of the repository.
     :return: JSON of issues in GitLab Code Quality report format.
+    :raises ValueError: If input is not a JSON object.
+    :raises TypeError: If input JSON is not an object.
 
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
-    data = cast("dict", json.load(input_))
+    try:
+        data = json.load(input_)
+    except json.JSONDecodeError as e:
+        err_msg = f"Invalid JSON input: {e}"
+        raise ValueError(err_msg) from e
+
+    if not isinstance(data, dict):
+        err_msg = "Input must be a JSON object"
+        raise TypeError(err_msg)
+
     return json.dumps(
         [
             _pyright_issue_to_gitlab(issue, prefix)
@@ -91,28 +109,35 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
 def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     """Convert a single issue to gitlab.
 
+    Uses defensive .get() with defaults to handle missing optional fields.
+    File path defaults to '<anonymous>' and missing rule to 'unknown'.
+
     :param issue: A pyright single issue.
     :param prefix: The path prefix.
     :returns: A gitlab single issue.
     """
-    start, end = issue["range"]["start"], issue["range"]["end"]
-    rule = "pyright: " + issue.get("rule", "")
-    # unique fingerprint
-    fp_str = "--".join([str(start), str(end), rule])
+    start, end = (
+        issue.get("range", {}).get("start", {}),
+        issue.get("range", {}).get("end", {}),
+    )
+    rule = "pyright: " + issue.get("rule", "unknown")
+    # Unique fingerprint including file path to prevent collisions across files
+    fp_str = "--".join([issue.get("file", "<anonymous>"), str(start), str(end), rule])
 
     return GitlabIssue(
-        description=issue["message"],
-        severity="major" if issue["severity"] == "error" else "minor",
+        description=issue.get("message", ""),
+        severity="major" if issue.get("severity") == "error" else "minor",
+        # Any hash function really works, does not have to be cryptographic.
         fingerprint=hashlib.sha3_224(fp_str.encode()).hexdigest(),
         check_name=rule,
         location=GitlabIssueLocation(
-            path=f"{prefix}{issue['file']}",
+            path=f"{prefix}{issue['file']}" if "file" in issue else "<anonymous>",
             positions=GitlabIssuePositions(
                 begin=GitlabIssuePositionLocation(
-                    line=start["line"], column=start["character"]
+                    line=start.get("line", 0), column=start.get("character", 0)
                 ),
                 end=GitlabIssuePositionLocation(
-                    line=end["line"], column=end["character"]
+                    line=end.get("line", 0), column=end.get("character", 0)
                 ),
             ),
         ),
