@@ -86,10 +86,12 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     try:
         data = json.load(input_)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON input: {e}") from e
+        err_msg = f"Invalid JSON input: {e}"
+        raise TypeError(err_msg) from e
 
     if not isinstance(data, dict):
-        raise ValueError("Input must be a JSON object")
+        err_msg = "Input must be a JSON object"
+        raise TypeError(err_msg)
 
     return json.dumps(
         [
@@ -107,24 +109,28 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     :param prefix: The path prefix.
     :returns: A gitlab single issue.
     """
-    start, end = issue["range"]["start"], issue["range"]["end"]
-    rule = "pyright: " + issue.get("rule", "")
+    start, end = (
+        issue.get("range", {}).get("start", {}),
+        issue.get("range", {}).get("end", {}),
+    )
+    rule = "pyright: " + issue.get("rule", "unknown")
     # Unique fingerprint including file path to prevent collisions across files
-    fp_str = "--".join([issue["file"], str(start), str(end), rule])
+    fp_str = "--".join([issue.get("file", "<anonymous>"), str(start), str(end), rule])
 
     return GitlabIssue(
-        description=issue["message"],
-        severity="major" if issue["severity"] == "error" else "minor",
+        description=issue.get("message", ""),
+        severity="major" if issue.get("severity") == "error" else "minor",
+        # Any hash function really works, does not have to be cryptographic.
         fingerprint=hashlib.sha3_224(fp_str.encode()).hexdigest(),
         check_name=rule,
         location=GitlabIssueLocation(
-            path=f"{prefix}{issue['file']}",
+            path=f"{prefix}{issue['file']}" if "file" in issue else "<anonymous>",
             positions=GitlabIssuePositions(
                 begin=GitlabIssuePositionLocation(
-                    line=start["line"], column=start["character"]
+                    line=start.get("line", -1), column=start.get("character", -1)
                 ),
                 end=GitlabIssuePositionLocation(
-                    line=end["line"], column=end["character"]
+                    line=end.get("line", -1), column=end.get("character", -1)
                 ),
             ),
         ),
