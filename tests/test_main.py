@@ -165,7 +165,7 @@ def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.stdin", io.StringIO("{invalid json"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
-    with pytest.raises(TypeError, match="Invalid JSON input"):
+    with pytest.raises(ValueError, match="Invalid JSON input"):
         main()
 
 

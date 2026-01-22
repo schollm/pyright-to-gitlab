@@ -81,7 +81,7 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     :arg prefix: A string to prepend to each file path in the output.
         This is useful if the application is in a subdirectory of the repository.
     :return: JSON of issues in GitLab Code Quality report format.
-    :raises TypeError: If input is not a JSON object.
+    :raises ValueError: If input is not a JSON object.
 
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
@@ -90,7 +90,7 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
         data = json.load(input_)
     except json.JSONDecodeError as e:
         err_msg = f"Invalid JSON input: {e}"
-        raise TypeError(err_msg) from e
+        raise ValueError(err_msg) from e
 
     if not isinstance(data, dict):
         err_msg = "Input must be a JSON object"
