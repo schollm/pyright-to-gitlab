@@ -50,7 +50,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportGeneralTypeIssues",
         "description": 'Message "foo"',
-        "fingerprint": "636af0d195f1115a2100087f399ea9759e20a6bf30494b881653eb7b",
+        "fingerprint": "c07588a4b4ee16dee26d14c086857de5a86bb7034461cdad63f6397f",
         "location": {
             "path": "test1.py",
             "positions": {
@@ -63,7 +63,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportInvalidTypeForm",
         "description": "Message bar",
-        "fingerprint": "b0678d27f9d033a7176fcaf13dcfd449a7ec9cff211484ff730b32b2",
+        "fingerprint": "d8bd498be79cb56d504196f52a1ba9bcd4e66635404629eda82e6be4",
         "location": {
             "path": "test2.py",
             "positions": {
@@ -158,3 +158,21 @@ def test_prefix(
         for issue in gitlab
     ]
     assert json.loads(captured.out) == gitlab_with_prefix
+
+
+def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that malformed JSON input raises ValueError."""
+    monkeypatch.setattr("sys.stdin", io.StringIO("{invalid json"))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+
+    with pytest.raises(ValueError, match="Invalid JSON input"):
+        main()
+
+
+def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that non-dict JSON input raises ValueError."""
+    monkeypatch.setattr("sys.stdin", io.StringIO("[]"))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+
+    with pytest.raises(ValueError, match="Input must be a JSON object"):
+        main()

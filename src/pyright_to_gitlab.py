@@ -7,7 +7,12 @@ import hashlib
 import json
 import sys
 import textwrap
-from typing import Literal, TextIO, TypedDict, cast
+from typing import Literal, TextIO, TypedDict
+
+try:
+    from typing import NotRequired
+except ImportError:
+    from typing_extensions import NotRequired  # type: ignore[assignment]
 
 
 ### Typing for PyRight Issue
@@ -31,7 +36,7 @@ class PyrightIssue(TypedDict):
     file: str
     severity: Literal["error", "warning", "information"]
     message: str
-    rule: str
+    rule: NotRequired[str]  # Optional field
     range: PyrightRange
 
 
@@ -78,7 +83,14 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
-    data = cast("dict", json.load(input_))
+    try:
+        data = json.load(input_)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON input: {e}") from e
+
+    if not isinstance(data, dict):
+        raise ValueError("Input must be a JSON object")
+
     return json.dumps(
         [
             _pyright_issue_to_gitlab(issue, prefix)
@@ -97,8 +109,8 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     """
     start, end = issue["range"]["start"], issue["range"]["end"]
     rule = "pyright: " + issue.get("rule", "")
-    # unique fingerprint
-    fp_str = "--".join([str(start), str(end), rule])
+    # Unique fingerprint including file path to prevent collisions across files
+    fp_str = "--".join([issue["file"], str(start), str(end), rule])
 
     return GitlabIssue(
         description=issue["message"],

@@ -8,6 +8,9 @@ authors = [{ name = "Micha Schöll", email = "" }]
 license = "MIT"
 license-files = ["LICENSE"]
 keywords = [ "ci/cd", "pyright", 'gitlab' ]
+dependencies = [
+    "typing-extensions>=4.0.0; python_version < '3.11'",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -32,7 +35,7 @@ repository = "https://github.com/schollm/pyright-to-gitlab/"
 pypi = "https://pypi.org/project/pyright-to-gitlab"
 
 [project.scripts]
-pyrigh-to-gitlab = 'pyright_to_gitlab:main'
+pyright-to-gitlab = 'pyright_to_gitlab:main'
 
 [build-system]
 requires = ["hatchling"]
