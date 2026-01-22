@@ -165,7 +165,7 @@ def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.stdin", io.StringIO("{invalid json"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
-    with pytest.raises(ValueError, match="Invalid JSON input"):
+    with pytest.raises(TypeError, match="Invalid JSON input"):
         main()
 
 
@@ -174,5 +174,5 @@ def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.stdin", io.StringIO("[]"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
-    with pytest.raises(ValueError, match="Input must be a JSON object"):
+    with pytest.raises(TypeError, match="Input must be a JSON object"):
         main()
