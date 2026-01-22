@@ -335,10 +335,10 @@ def test_missing_start_in_range(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["location"]["positions"]["begin"]["line"] == -1
-    assert result[0]["location"]["positions"]["begin"]["column"] == -1
-    assert result[0]["location"]["positions"]["end"]["line"] == 10
-    assert result[0]["location"]["positions"]["end"]["column"] == 20
+    assert result[0]["location"]["positions"] == {
+        "begin": {"line": -1, "column": -1},
+        "end": {"line": 10, "column": 20},
+    }
 
 
 def test_missing_end_in_range(
@@ -365,10 +365,10 @@ def test_missing_end_in_range(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["location"]["positions"]["begin"]["line"] == 5
-    assert result[0]["location"]["positions"]["begin"]["column"] == 10
-    assert result[0]["location"]["positions"]["end"]["line"] == -1
-    assert result[0]["location"]["positions"]["end"]["column"] == -1
+    assert result[0]["location"]["positions"] == {
+        "begin": {"line": 5, "column": 10},
+        "end": {"line": -1, "column": -1},
+    }
 
 
 def test_missing_line_in_start(
@@ -398,8 +398,10 @@ def test_missing_line_in_start(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["location"]["positions"]["begin"]["line"] == -1
-    assert result[0]["location"]["positions"]["begin"]["column"] == 10
+    assert result[0]["location"]["positions"] == {
+        "begin": {"line": -1, "column": 10},
+        "end": {"line": 10, "column": 20},
+    }
 
 
 def test_missing_character_in_end(
@@ -429,8 +431,7 @@ def test_missing_character_in_end(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["location"]["positions"]["end"]["line"] == 10
-    assert result[0]["location"]["positions"]["end"]["column"] == -1
+    assert result[0]["location"]["positions"]["end"] == {"line": 10, "column": -1}
 
 
 def test_missing_file_field(
