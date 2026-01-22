@@ -43,6 +43,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pyright_to_gitlab.py"]
+artifacts = ["src/py.typed"]
 
 [dependency-groups]
 dev = [

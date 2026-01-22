@@ -170,9 +170,115 @@ def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test that non-dict JSON input raises ValueError."""
+    """Test that non-dict JSON input raises TypeError."""
     monkeypatch.setattr("sys.stdin", io.StringIO("[]"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
     with pytest.raises(TypeError, match="Input must be a JSON object"):
         main()
+
+
+def test_warning_severity(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Test that warning severity is mapped to 'minor'."""
+    pyright = {
+        "generalDiagnostics": [
+            {
+                "file": "test.py",
+                "severity": "warning",
+                "message": "Test warning",
+                "range": {
+                    "start": {"line": 1, "character": 0},
+                    "end": {"line": 1, "character": 5},
+                },
+                "rule": "testRule",
+            }
+        ]
+    }
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+    main()
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert len(result) == 1
+    assert result[0]["severity"] == "minor"
+
+
+def test_information_severity(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Test that information severity is mapped to 'minor'."""
+    pyright = {
+        "generalDiagnostics": [
+            {
+                "file": "test.py",
+                "severity": "information",
+                "message": "Test info",
+                "range": {
+                    "start": {"line": 1, "character": 0},
+                    "end": {"line": 1, "character": 5},
+                },
+                "rule": "testRule",
+            }
+        ]
+    }
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+    main()
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert len(result) == 1
+    assert result[0]["severity"] == "minor"
+
+
+def test_missing_rule(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Test that missing rule field is handled with default."""
+    pyright = {
+        "generalDiagnostics": [
+            {
+                "file": "test.py",
+                "severity": "error",
+                "message": "Test error",
+                "range": {
+                    "start": {"line": 1, "character": 0},
+                    "end": {"line": 1, "character": 5},
+                },
+            }
+        ]
+    }
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+    main()
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert len(result) == 1
+    assert result[0]["check_name"] == "pyright: unknown"
+
+
+def test_empty_diagnostics(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Test handling of empty generalDiagnostics list."""
+    pyright = {"generalDiagnostics": []}
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+    main()
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert result == []
+
+
+def test_missing_general_diagnostics(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Test handling when generalDiagnostics key is missing."""
+    pyright = {"version": "1.0", "summary": {}}
+    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
+    main()
+    captured = capsys.readouterr()
+    result = json.loads(captured.out)
+    assert result == []

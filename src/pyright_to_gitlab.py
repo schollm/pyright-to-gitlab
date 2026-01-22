@@ -15,6 +15,13 @@ except ImportError:
     from typing_extensions import NotRequired  # type: ignore[assignment]
 
 
+# Exception messages
+_ERR_INVALID_JSON = "Invalid JSON input"
+_ERR_INVALID_TYPE = "Input must be a JSON object"
+_ERR_MISSING_FIELD = "Required field missing in pyright issue"
+_DEFAULT_RULE = "unknown-rule"
+
+
 ### Typing for PyRight Issue
 class PyrightRangeElement(TypedDict):
     """Pyright Range Element (part of Range)."""
@@ -76,9 +83,13 @@ class GitlabIssue(TypedDict):
 def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     """Convert pyright.json output to GitLab Code Quality report format.
 
+    Line numbers from Pyright are passed through unchanged (0-based per LSP spec).
+    GitLab expects the same format, so no conversion is needed.
+
     :arg prefix: A string to prepend to each file path in the output.
         This is useful if the application is in a subdirectory of the repository.
     :return: JSON of issues in GitLab Code Quality report format.
+    :raises TypeError: If input is not a JSON object.
 
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
@@ -104,6 +115,9 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
 
 def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     """Convert a single issue to gitlab.
+
+    Uses defensive .get() with defaults to handle missing optional fields.
+    File path defaults to '<anonymous>' and missing rule to 'unknown'.
 
     :param issue: A pyright single issue.
     :param prefix: The path prefix.
