@@ -161,7 +161,7 @@ def test_prefix(
 
 
 def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test that malformed JSON input raises ValueError."""
+    """Test that malformed JSON input raises TypeError."""
     monkeypatch.setattr("sys.stdin", io.StringIO("{invalid json"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
