@@ -9,18 +9,6 @@ import sys
 import textwrap
 from typing import Literal, TextIO, TypedDict
 
-try:
-    from typing import NotRequired
-except ImportError:
-    from typing_extensions import NotRequired  # type: ignore[assignment]
-
-
-# Exception messages
-_ERR_INVALID_JSON = "Invalid JSON input"
-_ERR_INVALID_TYPE = "Input must be a JSON object"
-_ERR_MISSING_FIELD = "Required field missing in pyright issue"
-_DEFAULT_RULE = "unknown-rule"
-
 
 ### Typing for PyRight Issue
 class PyrightRangeElement(TypedDict):
@@ -38,12 +26,16 @@ class PyrightRange(TypedDict):
 
 
 class PyrightIssue(TypedDict):
-    """Single Pyright Issue."""
+    """Single Pyright Issue.
+
+    Note: 'rule' field is optional in practice but marked as required in type hints.
+    Runtime code handles this with defensive .get() calls.
+    """
 
     file: str
     severity: Literal["error", "warning", "information"]
     message: str
-    rule: NotRequired[str]  # Optional field
+    rule: str  # Optional in practice, handled via .get() at runtime
     range: PyrightRange
 
 

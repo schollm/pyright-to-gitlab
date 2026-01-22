@@ -1,6 +1,6 @@
 [project]
 name = "pyright-to-gitlab"
-version = "1.1.0"
+version = "1.2.0"
 description = "Convert Pyright JSON output to GitLab CI/CD format"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -8,9 +8,6 @@ authors = [{ name = "Micha Schöll", email = "" }]
 license = "MIT"
 license-files = ["LICENSE"]
 keywords = [ "ci/cd", "pyright", 'gitlab' ]
-dependencies = [
-    "typing-extensions>=4.0.0; python_version < '3.11'",
-]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",

@@ -435,12 +435,8 @@ wheels = [
 
 [[package]]
 name = "pyright-to-gitlab"
-version = "1.1.0"
+version = "1.2.0"
 source = { editable = "." }
-dependencies = [
-    { name = "typing-extensions", version = "4.13.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
-    { name = "typing-extensions", version = "4.15.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9' and python_full_version < '3.11'" },
-]
 
 [package.dev-dependencies]
 dev = [
@@ -453,7 +449,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.0.0" }]
 
 [package.metadata.requires-dev]
 dev = [
