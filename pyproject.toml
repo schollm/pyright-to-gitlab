@@ -7,7 +7,7 @@ requires-python = ">=3.8"
 authors = [{ name = "Micha Schöll", email = "" }]
 license = "MIT"
 license-files = ["LICENSE"]
-keywords = [ "ci/cd", "pyright", 'gitlab' ]
+keywords = [ "ci/cd", "pyright", "gitlab" ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -59,7 +59,6 @@ ignore = [
     "D203",  # `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible.
     "COM812", # Missing trailing comma in a single-line list - already applied by ruff format.
     "D205", # 1 blank line required between summary line and description: ruff format disagrees.
-
 ]
 
 [tool.ruff.lint.per-file-ignores]
