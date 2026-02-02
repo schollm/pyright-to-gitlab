@@ -28,7 +28,8 @@ class PyrightRange(TypedDict, total=False):
 class PyrightIssue(TypedDict, total=False):
     """Single Pyright Issue.
 
-    Note: total=False makes all fields optional. Runtime code handles this with defensive .get() calls.
+    Note: total=False makes all fields optional. Runtime code handles this with
+    defensive .get() calls.
     """
 
     file: str
