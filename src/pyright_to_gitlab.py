@@ -182,6 +182,7 @@ def main() -> None:
         help="Prefix to add to each file entry. This can be used if pyright is run"
         " from a subdirectory of the repository. (default: empty string)",
     )
+    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
     args = parser.parse_args()
     args.output.write(_pyright_to_gitlab(input_=args.input, prefix=args.prefix))
 
