@@ -79,7 +79,7 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Line numbers from Pyright are passed through unchanged (0-based per LSP spec).
     GitLab expects the same format, so no conversion is needed.
 
-    :arg prefix: A string to prepend to each file path in the output.
+    :arg prefix: A path to prepend to each file path in the output.
         This is useful if the application is in a subdirectory of the repository.
     :return: JSON of issues in GitLab Code Quality report format.
     :raises ValueError: If input is not a JSON object.
@@ -88,6 +88,9 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
+    if prefix and not prefix.endswith("/"):
+        prefix += "/"
+
     try:
         data = json.load(input_)
     except json.JSONDecodeError as e:
