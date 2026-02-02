@@ -132,7 +132,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
         fingerprint=hashlib.md5(fp_str.encode()).hexdigest(),
         check_name=rule,
         location=GitlabIssueLocation(
-            path=f"{prefix}{issue['file']}" if "file" in issue else "<anonymous>",
+            path=f"{prefix}{issue.get('file', '<anonymous>')}",
             positions=GitlabIssuePositions(
                 begin=GitlabIssuePositionLocation(
                     line=start.get("line", 0), column=start.get("character", 0)
