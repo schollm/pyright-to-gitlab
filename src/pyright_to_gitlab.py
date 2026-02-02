@@ -125,6 +125,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
 
     return GitlabIssue(
         description=issue.get("message", ""),
+        # Map 'error' to 'major', all others, including empty, to 'minor'
         severity="major" if issue.get("severity") == "error" else "minor",
         # Any hash function really works, does not have to be cryptographic.
         fingerprint=hashlib.md5(fp_str.encode()).hexdigest(),
