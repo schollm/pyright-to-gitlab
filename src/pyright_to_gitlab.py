@@ -131,7 +131,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
         # Map 'error' to 'major', all others, including empty, to 'minor'
         severity="major" if issue.get("severity") == "error" else "minor",
         # Any hash function really works, does not have to be cryptographic.
-        fingerprint=hashlib.md5(fp_str.encode(), usedforsecurity=False).hexdigest(),
+        fingerprint=_hash(fp_str),
         check_name=rule,
         location=GitlabIssueLocation(
             path=f"{prefix}{issue.get('file', '<anonymous>')}",
@@ -146,7 +146,14 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
         ),
     )
 
+def _hash(data: str) -> str:
+    """Generate an (non-secure) hash of the given data string.
 
+    :param data: The input string to hash.
+    :returns: The hexadecimal representation of the MD5 hash.
+    """
+    return hashlib.new("md5", data.encode(), usedforsecurity=False).hexdigest()
+    
 def main() -> None:
     """Parse arguments and call the conversion function."""
     parser = argparse.ArgumentParser(
