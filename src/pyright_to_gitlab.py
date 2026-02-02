@@ -121,6 +121,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     start, end = (range_.get("start", {}), range_.get("end", {}))
     rule = "pyright: " + issue.get("rule", "unknown")
     # Unique fingerprint including file path to prevent collisions across files
+    # (This takes advantage of stable dict order).
     fp_str = f"{issue.get('file', '<anonymous>')}--{start}--{end}--{rule}"
 
     return GitlabIssue(
