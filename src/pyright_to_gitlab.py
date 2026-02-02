@@ -117,13 +117,11 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     :param prefix: The path prefix.
     :returns: A gitlab single issue.
     """
-    start, end = (
-        issue.get("range", {}).get("start", {}),
-        issue.get("range", {}).get("end", {}),
-    )
+    range_ = issue.get("range", {})
+    start, end = (range_.get("start", {}), range_.get("end", {}))
     rule = "pyright: " + issue.get("rule", "unknown")
     # Unique fingerprint including file path to prevent collisions across files
-    fp_str = "--".join([issue.get("file", "<anonymous>"), str(start), str(end), rule])
+    fp_str = f"{issue.get('file', '<anonymous>')}--{start}--{end}--{rule}"
 
     return GitlabIssue(
         description=issue.get("message", ""),
