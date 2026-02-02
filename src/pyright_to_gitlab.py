@@ -25,7 +25,7 @@ class PyrightRange(TypedDict):
     end: PyrightRangeElement
 
 
-class PyrightIssue(TypedDict):
+class PyrightIssue(TypedDict, total=False):
     """Single Pyright Issue.
 
     Note: 'rule' field is optional in practice but marked as required in type hints.
