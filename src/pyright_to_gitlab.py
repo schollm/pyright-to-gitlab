@@ -29,6 +29,7 @@ class PyrightIssue(TypedDict):
     """Single Pyright Issue.
 
     Note: 'rule' field is optional in practice but marked as required in type hints.
+    This is to support Python<3.11 without needing to use NotRequired from typing_extensions.
     Runtime code handles this with defensive .get() calls.
     """
 
