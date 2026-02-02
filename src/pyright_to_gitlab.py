@@ -11,14 +11,14 @@ from typing import Literal, TextIO, TypedDict
 
 
 ### Typing for PyRight Issue
-class PyrightRangeElement(TypedDict):
+class PyrightRangeElement(TypedDict, total=False):
     """Pyright Range Element (part of Range)."""
 
     line: int
     character: int
 
 
-class PyrightRange(TypedDict):
+class PyrightRange(TypedDict, total=False):
     """Pyright Range (Part of Issue)."""
 
     start: PyrightRangeElement
