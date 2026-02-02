@@ -146,6 +146,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
         ),
     )
 
+
 def _hash(data: str) -> str:
     """Generate an (non-secure) hash of the given data string.
 
@@ -153,7 +154,8 @@ def _hash(data: str) -> str:
     :returns: The hexadecimal representation of the MD5 hash.
     """
     return hashlib.new("md5", data.encode(), usedforsecurity=False).hexdigest()
-    
+
+
 def main() -> None:
     """Parse arguments and call the conversion function."""
     parser = argparse.ArgumentParser(
