@@ -50,7 +50,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportGeneralTypeIssues",
         "description": 'Message "foo"',
-        "fingerprint": "4929e740a51857c1666cc920511870c1",
+        "fingerprint": "023610260f7cb68cf03b7f5a1232b566",
         "location": {
             "path": "test1.py",
             "positions": {
@@ -63,7 +63,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportInvalidTypeForm",
         "description": "Message bar",
-        "fingerprint": "910a0bd9f3b94ec7845053599feb12aa",
+        "fingerprint": "2113f1d00f089646663709d55a111100",
         "location": {
             "path": "test2.py",
             "positions": {
@@ -143,7 +143,7 @@ def test_prefix(
 ) -> None:
     """Test that the prefix is added to the file paths in the output."""
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
-    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", "prefix/"])
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", "prefix"])
     prefix = "prefix/"
     main()
     captured = capsys.readouterr()
@@ -506,7 +506,7 @@ def test_completely_empty_issue(
         {
             "check_name": "pyright: unknown",
             "description": "",
-            "fingerprint": "86a7965af46d3020fe350b901db38a85",
+            "fingerprint": "dffaea5ca76e2b8d5ce64c938ce05945",
             "severity": "minor",
             "location": {
                 "path": "<anonymous>",
