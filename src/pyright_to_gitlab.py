@@ -128,7 +128,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
         description=issue.get("message", ""),
         severity="major" if issue.get("severity") == "error" else "minor",
         # Any hash function really works, does not have to be cryptographic.
-        fingerprint=hashlib.sha3_224(fp_str.encode()).hexdigest(),
+        fingerprint=hashlib.md5(fp_str.encode()).hexdigest(),
         check_name=rule,
         location=GitlabIssueLocation(
             path=f"{prefix}{issue['file']}" if "file" in issue else "<anonymous>",

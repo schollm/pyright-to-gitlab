@@ -50,7 +50,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportGeneralTypeIssues",
         "description": 'Message "foo"',
-        "fingerprint": "c07588a4b4ee16dee26d14c086857de5a86bb7034461cdad63f6397f",
+        "fingerprint": "4929e740a51857c1666cc920511870c1",
         "location": {
             "path": "test1.py",
             "positions": {
@@ -63,7 +63,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportInvalidTypeForm",
         "description": "Message bar",
-        "fingerprint": "d8bd498be79cb56d504196f52a1ba9bcd4e66635404629eda82e6be4",
+        "fingerprint": "910a0bd9f3b94ec7845053599feb12aa",
         "location": {
             "path": "test2.py",
             "positions": {
@@ -506,7 +506,7 @@ def test_completely_empty_issue(
         {
             "check_name": "pyright: unknown",
             "description": "",
-            "fingerprint": "751a157014b31820ec789f6f9cce28599122b8b56b628230f339ea2d",
+            "fingerprint": "86a7965af46d3020fe350b901db38a85",
             "severity": "minor",
             "location": {
                 "path": "<anonymous>",
