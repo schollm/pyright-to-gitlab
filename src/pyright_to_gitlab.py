@@ -122,16 +122,16 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     range_ = issue.get("range", {})
     start, end = (range_.get("start", {}), range_.get("end", {}))
     rule = "pyright: " + issue.get("rule", "unknown")
-    # Unique fingerprint including file path to prevent collisions across files
+    # Hash input must contain file, location and rule to generate a unique fingerprint.
     # (This takes advantage of stable dict order).
-    fp_str = f"{issue.get('file', '<anonymous>')}--{range_}--{rule}"
+    fingerprint = f"{issue.get('file', '<anonymous>')}--{range_}--{rule}"
 
     return GitlabIssue(
         description=issue.get("message", ""),
         # Map 'error' to 'major', all others, including empty, to 'minor'
         severity="major" if issue.get("severity") == "error" else "minor",
         # Any hash function really works, does not have to be cryptographic.
-        fingerprint=_hash(fp_str),
+        fingerprint=_hash(fingerprint),
         check_name=rule,
         location=GitlabIssueLocation(
             path=f"{prefix}{issue.get('file', '<anonymous>')}",
