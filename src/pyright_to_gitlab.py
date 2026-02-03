@@ -193,7 +193,7 @@ def cli() -> None:
         help="Prefix path to add to each file entry. This can be used if pyright is run"
         " from a subdirectory of the repository. (default: empty string)",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 1.2.0")
+    parser.add_argument("--version", action="version", version="%(prog)s 1.3.0")
     args = parser.parse_args()
     args.output.write(_pyright_to_gitlab(input_=args.input, prefix=args.prefix))
 
