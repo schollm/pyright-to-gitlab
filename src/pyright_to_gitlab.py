@@ -11,25 +11,25 @@ from typing import Literal, TextIO, TypedDict
 
 
 ### Typing for PyRight Issue
-class PyrightRangeElement(TypedDict):
+class PyrightRangeElement(TypedDict, total=False):
     """Pyright Range Element (part of Range)."""
 
     line: int
     character: int
 
 
-class PyrightRange(TypedDict):
+class PyrightRange(TypedDict, total=False):
     """Pyright Range (Part of Issue)."""
 
     start: PyrightRangeElement
     end: PyrightRangeElement
 
 
-class PyrightIssue(TypedDict):
+class PyrightIssue(TypedDict, total=False):
     """Single Pyright Issue.
 
-    Note: 'rule' field is optional in practice but marked as required in type hints.
-    Runtime code handles this with defensive .get() calls.
+    Note: total=False makes all fields optional. Runtime code handles this with
+    defensive .get() calls.
     """
 
     file: str
@@ -78,7 +78,7 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Line numbers from Pyright are passed through unchanged (0-based per LSP spec).
     GitLab expects the same format, so no conversion is needed.
 
-    :arg prefix: A string to prepend to each file path in the output.
+    :arg prefix: A path to prepend to each file path in the output.
         This is useful if the application is in a subdirectory of the repository.
     :return: JSON of issues in GitLab Code Quality report format.
     :raises ValueError: If input is not a JSON object.
@@ -87,6 +87,9 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
     Pyright format at https://github.com/microsoft/pyright/blob/main/docs/command-line.md
     Gitlab format at https://docs.gitlab.com/ci/testing/code_quality/#code-quality-report-format
     """
+    if prefix and not prefix.endswith("/"):
+        prefix += "/"
+
     try:
         data = json.load(input_)
     except json.JSONDecodeError as e:
@@ -116,22 +119,22 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     :param prefix: The path prefix.
     :returns: A gitlab single issue.
     """
-    start, end = (
-        issue.get("range", {}).get("start", {}),
-        issue.get("range", {}).get("end", {}),
-    )
+    range_ = issue.get("range", {})
+    start, end = (range_.get("start", {}), range_.get("end", {}))
     rule = "pyright: " + issue.get("rule", "unknown")
-    # Unique fingerprint including file path to prevent collisions across files
-    fp_str = "--".join([issue.get("file", "<anonymous>"), str(start), str(end), rule])
+    # Hash input must contain file, location and rule to generate a unique fingerprint.
+    # (This takes advantage of stable dict order).
+    fingerprint = f"{issue.get('file', '<anonymous>')}--{range_}--{rule}"
 
     return GitlabIssue(
         description=issue.get("message", ""),
+        # Map 'error' to 'major', all others, including empty, to 'minor'
         severity="major" if issue.get("severity") == "error" else "minor",
         # Any hash function really works, does not have to be cryptographic.
-        fingerprint=hashlib.sha3_224(fp_str.encode()).hexdigest(),
+        fingerprint=_hash(fingerprint),
         check_name=rule,
         location=GitlabIssueLocation(
-            path=f"{prefix}{issue['file']}" if "file" in issue else "<anonymous>",
+            path=f"{prefix}{issue.get('file', '<anonymous>')}",
             positions=GitlabIssuePositions(
                 begin=GitlabIssuePositionLocation(
                     line=start.get("line", 0), column=start.get("character", 0)
@@ -144,7 +147,16 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
     )
 
 
-def main() -> None:
+def _hash(data: str) -> str:
+    """Generate an (non-secure) hash of the given data string.
+
+    :param data: The input string to hash.
+    :returns: The hexadecimal representation of the MD5 hash.
+    """
+    return hashlib.new("md5", data.encode(), usedforsecurity=False).hexdigest()
+
+
+def cli() -> None:
     """Parse arguments and call the conversion function."""
     parser = argparse.ArgumentParser(
         description=textwrap.dedent("""
@@ -178,12 +190,13 @@ def main() -> None:
         "--prefix",
         type=str,
         default="",
-        help="Prefix to add to each file entry. This can be used if pyright is run"
+        help="Prefix path to add to each file entry. This can be used if pyright is run"
         " from a subdirectory of the repository. (default: empty string)",
     )
+    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
     args = parser.parse_args()
     args.output.write(_pyright_to_gitlab(input_=args.input, prefix=args.prefix))
 
 
 if __name__ == "__main__":  # pragma: no cover
-    main()
+    cli()

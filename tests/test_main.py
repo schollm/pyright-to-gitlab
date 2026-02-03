@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 import pytest
 
-from pyright_to_gitlab import main
+from pyright_to_gitlab import cli
 
 PYRIGHT = {
     "version": "1.1.385",
@@ -50,7 +50,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportGeneralTypeIssues",
         "description": 'Message "foo"',
-        "fingerprint": "c07588a4b4ee16dee26d14c086857de5a86bb7034461cdad63f6397f",
+        "fingerprint": "023610260f7cb68cf03b7f5a1232b566",
         "location": {
             "path": "test1.py",
             "positions": {
@@ -63,7 +63,7 @@ GITLAB = [
     {
         "check_name": "pyright: reportInvalidTypeForm",
         "description": "Message bar",
-        "fingerprint": "d8bd498be79cb56d504196f52a1ba9bcd4e66635404629eda82e6be4",
+        "fingerprint": "2113f1d00f089646663709d55a111100",
         "location": {
             "path": "test2.py",
             "positions": {
@@ -92,7 +92,7 @@ def test(
     """Test that the pyright.json is converted to GitLab Code Quality report format."""
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     assert json.loads(captured.out) == gitlab
 
@@ -124,10 +124,20 @@ def test_input_output_file(
             output_file.as_posix(),
         ],
     )
-    main()
+    cli()
     assert json.loads(output_file.read_text("utf-8")) == gitlab
 
 
+@pytest.mark.parametrize(
+    ("prefix_input", "prefix_expected"),
+    [
+        ("", ""),
+        (".", "./"),
+        ("src/", "src/"),
+        ("src", "src/"),
+        ("..", "../"),
+    ],
+)
 @pytest.mark.parametrize(
     ("pyright", "gitlab"),
     [
@@ -138,21 +148,22 @@ def test_input_output_file(
 def test_prefix(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture,
+    prefix_input: str,
+    prefix_expected: str,
     pyright: dict,
     gitlab: list[dict],
 ) -> None:
     """Test that the prefix is added to the file paths in the output."""
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
-    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", "prefix/"])
-    prefix = "prefix/"
-    main()
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", prefix_input])
+    cli()
     captured = capsys.readouterr()
     gitlab_with_prefix = [
         {
             **issue,
             "location": {
                 **issue["location"],
-                "path": f"{prefix}{issue['location']['path']}",
+                "path": f"{prefix_expected}{issue['location']['path']}",
             },
         }
         for issue in gitlab
@@ -166,7 +177,7 @@ def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
     with pytest.raises(ValueError, match="Invalid JSON input"):
-        main()
+        cli()
 
 
 def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -175,18 +186,31 @@ def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
     with pytest.raises(TypeError, match="Input must be a JSON object"):
-        main()
+        cli()
 
 
-def test_warning_severity(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+@pytest.mark.parametrize(
+    ("severity_input", "severity_expected"),
+    [
+        ("error", "major"),
+        ("warning", "minor"),
+        ("information", "minor"),
+        ("", "minor"),
+        (None, "minor"),
+    ],
+)
+def test_severity(
+    severity_input: str | None,
+    severity_expected: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture,
 ) -> None:
     """Test that warning severity is mapped to 'minor'."""
     pyright = {
         "generalDiagnostics": [
             {
                 "file": "test.py",
-                "severity": "warning",
+                "severity": severity_input,
                 "message": "Test warning",
                 "range": {
                     "start": {"line": 1, "character": 0},
@@ -198,38 +222,11 @@ def test_warning_severity(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["severity"] == "minor"
-
-
-def test_information_severity(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
-) -> None:
-    """Test that information severity is mapped to 'minor'."""
-    pyright = {
-        "generalDiagnostics": [
-            {
-                "file": "test.py",
-                "severity": "information",
-                "message": "Test info",
-                "range": {
-                    "start": {"line": 1, "character": 0},
-                    "end": {"line": 1, "character": 5},
-                },
-                "rule": "testRule",
-            }
-        ]
-    }
-    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
-    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
-    captured = capsys.readouterr()
-    result = json.loads(captured.out)
-    assert len(result) == 1
-    assert result[0]["severity"] == "minor"
+    assert result[0]["severity"] == severity_expected
 
 
 def test_missing_rule(
@@ -251,7 +248,7 @@ def test_missing_rule(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -265,7 +262,7 @@ def test_empty_diagnostics(
     pyright = {"generalDiagnostics": []}
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert result == []
@@ -278,7 +275,7 @@ def test_missing_general_diagnostics(
     pyright = {"version": "1.0", "summary": {}}
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert result == []
@@ -301,7 +298,7 @@ def test_missing_range_field(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -331,7 +328,7 @@ def test_missing_start_in_range(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -361,7 +358,7 @@ def test_missing_end_in_range(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -383,10 +380,7 @@ def test_missing_line_in_start(
                 "message": "Test error",
                 "rule": "testRule",
                 "range": {
-                    "start": {
-                        # Missing 'line' field
-                        "character": 10
-                    },
+                    "start": {"character": 10},  # Missing 'line' field
                     "end": {"line": 10, "character": 20},
                 },
             }
@@ -394,7 +388,7 @@ def test_missing_line_in_start(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -427,7 +421,7 @@ def test_missing_character_in_end(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -454,7 +448,7 @@ def test_missing_file_field(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -481,7 +475,7 @@ def test_missing_message_field(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -499,14 +493,14 @@ def test_completely_empty_issue(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert result == [
         {
             "check_name": "pyright: unknown",
             "description": "",
-            "fingerprint": "751a157014b31820ec789f6f9cce28599122b8b56b628230f339ea2d",
+            "fingerprint": "dffaea5ca76e2b8d5ce64c938ce05945",
             "severity": "minor",
             "location": {
                 "path": "<anonymous>",
