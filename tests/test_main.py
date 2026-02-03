@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+from importlib.metadata import version
+
 import pytest
 
 from pyright_to_gitlab import cli
@@ -511,3 +513,14 @@ def test_completely_empty_issue(
             },
         }
     ]
+
+
+def test_version_flag(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Test that the --version flag outputs the correct version."""
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--version"])
+    with pytest.raises(SystemExit):
+        cli()
+    result = capsys.readouterr().out
+    assert result == f"pyright_to_gitlab.py {version('pyright-to-gitlab')}\n"
