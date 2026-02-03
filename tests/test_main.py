@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 import pytest
 
-from pyright_to_gitlab import main
+from pyright_to_gitlab import cli
 
 PYRIGHT = {
     "version": "1.1.385",
@@ -92,7 +92,7 @@ def test(
     """Test that the pyright.json is converted to GitLab Code Quality report format."""
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     assert json.loads(captured.out) == gitlab
 
@@ -124,7 +124,7 @@ def test_input_output_file(
             output_file.as_posix(),
         ],
     )
-    main()
+    cli()
     assert json.loads(output_file.read_text("utf-8")) == gitlab
 
 
@@ -156,7 +156,7 @@ def test_prefix(
     """Test that the prefix is added to the file paths in the output."""
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", prefix_input])
-    main()
+    cli()
     captured = capsys.readouterr()
     gitlab_with_prefix = [
         {
@@ -177,7 +177,7 @@ def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
     with pytest.raises(ValueError, match="Invalid JSON input"):
-        main()
+        cli()
 
 
 def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -186,7 +186,8 @@ def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
     with pytest.raises(TypeError, match="Input must be a JSON object"):
-        main()
+        cli()
+
 
 @pytest.mark.parametrize(
     ("severity_input", "severity_expected"),
@@ -221,7 +222,7 @@ def test_severity(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -247,7 +248,7 @@ def test_missing_rule(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -261,7 +262,7 @@ def test_empty_diagnostics(
     pyright = {"generalDiagnostics": []}
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert result == []
@@ -274,7 +275,7 @@ def test_missing_general_diagnostics(
     pyright = {"version": "1.0", "summary": {}}
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert result == []
@@ -297,7 +298,7 @@ def test_missing_range_field(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -327,7 +328,7 @@ def test_missing_start_in_range(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -357,7 +358,7 @@ def test_missing_end_in_range(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -387,7 +388,7 @@ def test_missing_line_in_start(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -420,7 +421,7 @@ def test_missing_character_in_end(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -447,7 +448,7 @@ def test_missing_file_field(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -474,7 +475,7 @@ def test_missing_message_field(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
@@ -492,7 +493,7 @@ def test_completely_empty_issue(
     }
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
+    cli()
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert result == [

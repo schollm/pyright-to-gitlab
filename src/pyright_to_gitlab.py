@@ -156,7 +156,7 @@ def _hash(data: str) -> str:
     return hashlib.new("md5", data.encode(), usedforsecurity=False).hexdigest()
 
 
-def main() -> None:
+def cli() -> None:
     """Parse arguments and call the conversion function."""
     parser = argparse.ArgumentParser(
         description=textwrap.dedent("""
@@ -199,4 +199,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    main()
+    cli()
