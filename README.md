@@ -24,12 +24,12 @@ $ pip install pyright-to-gitlab
 $  pyright . --outputjson | python -m pyright_to_gitlab > code-quality.json 
 ```
 ### Custom path prefix
-The `--prefix` option adds a custom prefix to the file paths in the output. This is
-useful if the paths in the pyright output are not relative to the root of the repository.
+The `--prefix` option adds a custom prefix path to the file paths in the output. This is
+useful for mono-repos, where the paths in the pyright output is not the repository root.
 
 
 ```shell
-$  pyright . --outputjson | pyright-to-gitlab --prefix my-app/ > code-quality.json 
+$  pyright . --outputjson | pyright-to-gitlab --prefix my-app > code-quality.json
 ```
 
 ## Testing

@@ -190,7 +190,7 @@ def main() -> None:
         "--prefix",
         type=str,
         default="",
-        help="Prefix to add to each file entry. This can be used if pyright is run"
+        help="Prefix path to add to each file entry. This can be used if pyright is run"
         " from a subdirectory of the repository. (default: empty string)",
     )
     parser.add_argument("--version", action="version", version="%(prog)s 1.0")

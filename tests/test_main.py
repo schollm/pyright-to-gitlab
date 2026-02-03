@@ -127,7 +127,13 @@ def test_input_output_file(
     main()
     assert json.loads(output_file.read_text("utf-8")) == gitlab
 
-
+@pytest.mark.parametrize("prefix_input,prefix_expected", [
+    ("", ""),
+    (".", "./"),
+    ("src/", "src/"),
+    ("src", "src/"),
+    ("..", "../"),
+])
 @pytest.mark.parametrize(
     ("pyright", "gitlab"),
     [
@@ -138,13 +144,14 @@ def test_input_output_file(
 def test_prefix(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture,
+    prefix_input: str,
+    prefix_expected: str,
     pyright: dict,
     gitlab: list[dict],
 ) -> None:
     """Test that the prefix is added to the file paths in the output."""
     monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
-    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", "prefix"])
-    prefix = "prefix/"
+    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py", "--prefix", prefix_input])
     main()
     captured = capsys.readouterr()
     gitlab_with_prefix = [
@@ -152,7 +159,7 @@ def test_prefix(
             **issue,
             "location": {
                 **issue["location"],
-                "path": f"{prefix}{issue['location']['path']}",
+                "path": f"{prefix_expected}{issue['location']['path']}",
             },
         }
         for issue in gitlab
