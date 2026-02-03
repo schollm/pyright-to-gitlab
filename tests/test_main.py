@@ -127,13 +127,17 @@ def test_input_output_file(
     main()
     assert json.loads(output_file.read_text("utf-8")) == gitlab
 
-@pytest.mark.parametrize("prefix_input,prefix_expected", [
-    ("", ""),
-    (".", "./"),
-    ("src/", "src/"),
-    ("src", "src/"),
-    ("..", "../"),
-])
+
+@pytest.mark.parametrize(
+    ("prefix_input", "prefix_expected"),
+    [
+        ("", ""),
+        (".", "./"),
+        ("src/", "src/"),
+        ("src", "src/"),
+        ("..", "../"),
+    ],
+)
 @pytest.mark.parametrize(
     ("pyright", "gitlab"),
     [
@@ -184,16 +188,28 @@ def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(TypeError, match="Input must be a JSON object"):
         main()
 
-
-def test_warning_severity(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+@pytest.mark.parametrize(
+    ("severity_input", "severity_expected"),
+    [
+        ("error", "major"),
+        ("warning", "minor"),
+        ("information", "minor"),
+        ("", "minor"),
+        (None, "minor"),
+    ],
+)
+def test_severity(
+    severity_input: str | None,
+    severity_expected: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture,
 ) -> None:
     """Test that warning severity is mapped to 'minor'."""
     pyright = {
         "generalDiagnostics": [
             {
                 "file": "test.py",
-                "severity": "warning",
+                "severity": severity_input,
                 "message": "Test warning",
                 "range": {
                     "start": {"line": 1, "character": 0},
@@ -209,34 +225,7 @@ def test_warning_severity(
     captured = capsys.readouterr()
     result = json.loads(captured.out)
     assert len(result) == 1
-    assert result[0]["severity"] == "minor"
-
-
-def test_information_severity(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
-) -> None:
-    """Test that information severity is mapped to 'minor'."""
-    pyright = {
-        "generalDiagnostics": [
-            {
-                "file": "test.py",
-                "severity": "information",
-                "message": "Test info",
-                "range": {
-                    "start": {"line": 1, "character": 0},
-                    "end": {"line": 1, "character": 5},
-                },
-                "rule": "testRule",
-            }
-        ]
-    }
-    monkeypatch.setattr("sys.stdin", io.StringIO(json.dumps(pyright)))
-    monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
-    main()
-    captured = capsys.readouterr()
-    result = json.loads(captured.out)
-    assert len(result) == 1
-    assert result[0]["severity"] == "minor"
+    assert result[0]["severity"] == severity_expected
 
 
 def test_missing_rule(
@@ -390,10 +379,7 @@ def test_missing_line_in_start(
                 "message": "Test error",
                 "rule": "testRule",
                 "range": {
-                    "start": {
-                        # Missing 'line' field
-                        "character": 10
-                    },
+                    "start": {"character": 10},  # Missing 'line' field
                     "end": {"line": 10, "character": 20},
                 },
             }

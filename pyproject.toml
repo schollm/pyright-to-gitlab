@@ -67,6 +67,7 @@ ignore = [
     "S101", # asserts allowed in tests...
     "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+    "PLR0913", # Too many arguments in test functions are sometimes necessary (e.g. via fixtures)
 ]
 
 [tool.pytest.ini_options]
