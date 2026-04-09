@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support of Python 3.15.
 - Print only short error message in case of failure.
+- Update --help message for CLI.
+- Internal: Use poethepoet as taskrunner.
 - Internal: Update GitHub workflow actions to use latest versions.
 
 ## [1.3.1] - 2026-04-09

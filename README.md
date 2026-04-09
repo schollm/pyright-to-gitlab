@@ -35,5 +35,5 @@ $  pyright . --outputjson | pyright-to-gitlab --prefix my-app > code-quality.jso
 ## Testing
 To run the tests, execute
 ```shell
-$ uv run pytest tests/
+$ uv run poe check
 ```
