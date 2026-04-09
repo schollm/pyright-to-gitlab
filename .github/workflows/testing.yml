@@ -42,9 +42,9 @@ jobs:
             python-version: "3.11"
           - os: "ubuntu-latest"
             python-version: "3.13"
-          - os: "ubuntu-latest"
-            python-version: "3.15"
-            coverage: true
+#          - os: "ubuntu-latest" # Wait for actions/setup-python to support 3.15.
+#            python-version: "3.15"
+#            coverage: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
