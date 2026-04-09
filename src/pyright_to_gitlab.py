@@ -10,7 +10,7 @@ import textwrap
 from pathlib import Path
 from typing import Literal, TypedDict
 
-VERSION = "1.3.1"  # do not use importlib to allow for direct script download.
+VERSION = "1.3.2"  # do not use importlib to allow for direct script download.
 
 
 ### Typing for PyRight Issue
