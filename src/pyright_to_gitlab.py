@@ -9,6 +9,7 @@ import sys
 import textwrap
 from typing import Literal, TextIO, TypedDict
 
+VERSION = "1.3.1"  # do not use importlib to allow for direct script download.
 
 ### Typing for PyRight Issue
 class PyrightRangeElement(TypedDict, total=False):
@@ -193,7 +194,7 @@ def cli() -> None:
         help="Prefix path to add to each file entry. This can be used if pyright is run"
         " from a subdirectory of the repository. (default: empty string)",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 1.3.0")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     args = parser.parse_args()
     args.output.write(_pyright_to_gitlab(input_=args.input, prefix=args.prefix))
 
