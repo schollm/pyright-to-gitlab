@@ -172,38 +172,44 @@ def cli() -> None:
     """Parse arguments and call the conversion function."""
     parser = argparse.ArgumentParser(
         description=textwrap.dedent("""
-        Convert pyright.json to GitLab Code Quality report.
-        By default, reads from stdin and writes to stdout."""),
+            Convert Pyright JSON output to a GitLab Code Quality report.
+
+            Input defaults to stdin and output defaults to stdout.
+            Use '-' explicitly for stdin/stdout when mixing with file paths."""),
         epilog=textwrap.dedent(
             """
-
-        Example usage:
-        > python pyright . --outputjson | pyright-to-gitlab > gitlab_code_quality.json
-        > pyright-to-gitlab -i pyright.json -o gitlab_code_quality.json
-        """
+            Examples:
+              pyright . --outputjson | pyright-to-gitlab > gl-code-quality.json
+              pyright-to-gitlab -i pyright.json -o gl-code-quality.json
+              pyright-to-gitlab --prefix backend/ -i pyright.json -o -
+              pyright-to-gitlab -i pyright.json --indent 0
+            """
         ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
         "-i",
         "--input",
         type=str,
+        metavar="INPUT",
         default="-",
-        help="Input file (default: stdin)",
+        help="Path to Pyright JSON input (default: -). Use - to read from stdin.",
     )
     parser.add_argument(
         "-o",
         "--output",
         type=str,
         default="-",
-        help="Output file (default: stdout)",
+        metavar="OUTPUT",
+        help="Path for GitLab Code Quality JSON (default: -)."
+        " Use - to write to stdout.",
     )
     parser.add_argument(
         "--prefix",
         type=str,
+        metavar="PATH_PREFIX",
         default="",
-        help="Prefix path to add to each file entry. This can be used if pyright is run"
-        " from a subdirectory of the repository. (default: empty string)",
+        help="Prefix added to each reported file path, e.g. 'backend/' for monorepos.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     args = parser.parse_args()
