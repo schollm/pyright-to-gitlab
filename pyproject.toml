@@ -1,6 +1,6 @@
 [project]
 name = "pyright-to-gitlab"
-version = "1.3.0"
+version = "1.3.1"
 description = "Convert Pyright JSON output to GitLab CI/CD format"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -31,7 +31,7 @@ repository = "https://github.com/schollm/pyright-to-gitlab/"
 pypi = "https://pypi.org/project/pyright-to-gitlab"
 
 [project.scripts]
-pyright-to-gitlab = 'pyright_to_gitlab:main'
+pyright-to-gitlab = 'pyright_to_gitlab:cli'
 
 [build-system]
 requires = ["hatchling"]
