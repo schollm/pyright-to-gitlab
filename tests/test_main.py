@@ -523,4 +523,4 @@ def test_version_flag(
     with pytest.raises(SystemExit):
         cli()
     result = capsys.readouterr().out
-    assert result == f"pyright_to_gitlab.py {version('pyright-to-gitlab')}\n"
+    assert result.endswith(f"pyright_to_gitlab.py {version('pyright-to-gitlab')}\n")

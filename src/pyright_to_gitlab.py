@@ -7,7 +7,8 @@ import hashlib
 import json
 import sys
 import textwrap
-from typing import Literal, TextIO, TypedDict
+from pathlib import Path
+from typing import Literal, TypedDict
 
 VERSION = "1.3.1"  # do not use importlib to allow for direct script download.
 
@@ -74,7 +75,7 @@ class GitlabIssue(TypedDict):
 
 
 ### Functions
-def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
+def _pyright_to_gitlab(input_: str, prefix: str = "") -> str:
     """Convert pyright.json output to GitLab Code Quality report format.
 
     Line numbers from Pyright are passed through unchanged (0-based per LSP spec).
@@ -93,7 +94,12 @@ def _pyright_to_gitlab(input_: TextIO, prefix: str = "") -> str:
         prefix += "/"
 
     try:
-        data = json.load(input_)
+        data_raw = (
+            sys.stdin.read()
+            if input_ == "-"
+            else Path(input_).read_text(encoding="utf-8")
+        )
+        data = json.loads(data_raw)
     except json.JSONDecodeError as e:
         err_msg = f"Invalid JSON input: {e}"
         raise ValueError(err_msg) from e
@@ -150,7 +156,7 @@ def _pyright_issue_to_gitlab(issue: PyrightIssue, prefix: str) -> GitlabIssue:
 
 
 def _hash(data: str) -> str:
-    """Generate an (non-secure) hash of the given data string.
+    """Generate a (non-secure) hash of the given data string.
 
     :param data: The input string to hash.
     :returns: The hexadecimal representation of the MD5 hash.
@@ -177,15 +183,15 @@ def cli() -> None:
     parser.add_argument(
         "-i",
         "--input",
-        type=argparse.FileType("r"),
-        default=sys.stdin,
+        type=str,
+        default="-",
         help="Input file (default: stdin)",
     )
     parser.add_argument(
         "-o",
         "--output",
-        type=argparse.FileType("w"),
-        default=sys.stdout,
+        type=str,
+        default="-",
         help="Output file (default: stdout)",
     )
     parser.add_argument(
@@ -197,7 +203,11 @@ def cli() -> None:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     args = parser.parse_args()
-    args.output.write(_pyright_to_gitlab(input_=args.input, prefix=args.prefix))
+    res = _pyright_to_gitlab(input_=args.input, prefix=args.prefix)
+    if args.output == "-":
+        sys.stdout.write(res)
+    else:
+        Path(args.output).write_text(res, encoding="utf-8")
 
 
 if __name__ == "__main__":  # pragma: no cover
