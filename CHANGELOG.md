@@ -4,16 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Upcoming]
+
 
 ## [1.3.1] - 2026-04-09
 ### Fixed
 - Fix entry point: `pyright-to-gitlab` command was broken due to referencing non-existent `main` instead of `cli`.
 
-## [Upcoming]
+## [1.3.0] - 2026-04-08
 ### Changes
 - Minimum version is now 3.8.
 - Use TypedDict for Pyright and Gitlab issue handling.
-- Update test dependencies to latest. 
+- Update test dependencies to latest.
 
 ## [1.1.0] - 2025-06-03
 ### Added
