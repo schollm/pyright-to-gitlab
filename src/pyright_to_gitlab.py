@@ -100,6 +100,10 @@ def _pyright_to_gitlab(input_: str, prefix: str = "") -> str:
             else Path(input_).read_text(encoding="utf-8")
         )
         data = json.loads(data_raw)
+    except (OSError, UnicodeError) as e:
+        source = "stdin" if input_ == "-" else input_
+        err_msg = f"Unable to read input from {source!r}: {e}"
+        raise ValueError(err_msg) from e
     except json.JSONDecodeError as e:
         err_msg = f"Invalid JSON input: {e}"
         raise ValueError(err_msg) from e
