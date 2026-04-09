@@ -11,6 +11,7 @@ from typing import Literal, TextIO, TypedDict
 
 VERSION = "1.3.1"  # do not use importlib to allow for direct script download.
 
+
 ### Typing for PyRight Issue
 class PyrightRangeElement(TypedDict, total=False):
     """Pyright Range Element (part of Range)."""
