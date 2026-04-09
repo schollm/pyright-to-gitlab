@@ -207,11 +207,14 @@ def cli() -> None:
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     args = parser.parse_args()
-    res = _pyright_to_gitlab(input_=args.input, prefix=args.prefix)
-    if args.output == "-":
-        sys.stdout.write(res)
-    else:
-        Path(args.output).write_text(res, encoding="utf-8")
+    try:
+        res = _pyright_to_gitlab(input_=args.input, prefix=args.prefix)
+        if args.output == "-":
+            sys.stdout.write(res)
+        else:
+            Path(args.output).write_text(res, encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":  # pragma: no cover

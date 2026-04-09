@@ -173,22 +173,28 @@ def test_prefix(
     assert json.loads(captured.out) == gitlab_with_prefix
 
 
-def test_malformed_json(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_malformed_json(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
     """Test that malformed JSON input raises ValueError."""
     monkeypatch.setattr("sys.stdin", io.StringIO("{invalid json"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
-    with pytest.raises(ValueError, match="Invalid JSON input"):
+    with pytest.raises(SystemExit, match="2"):
         cli()
+    assert "Invalid JSON input" in capsys.readouterr().err
 
 
-def test_non_dict_json(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_non_dict_json(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
     """Test that non-dict JSON input raises TypeError."""
     monkeypatch.setattr("sys.stdin", io.StringIO("[]"))
     monkeypatch.setattr("sys.argv", ["pyright_to_gitlab.py"])
 
-    with pytest.raises(TypeError, match="Input must be a JSON object"):
+    with pytest.raises(SystemExit, match="2"):
         cli()
+    assert "Input must be a JSON object" in capsys.readouterr().err
 
 
 @pytest.mark.parametrize(
