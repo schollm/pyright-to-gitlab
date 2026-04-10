@@ -4,12 +4,10 @@ from __future__ import annotations
 
 import io
 import json
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
+import re
+import sys
 from importlib.metadata import version
+from pathlib import Path
 
 import pytest
 
@@ -530,3 +528,45 @@ def test_version_flag(
         cli()
     result = capsys.readouterr().out
     assert result.endswith(f"pyright_to_gitlab.py {version('pyright-to-gitlab')}\n")
+
+
+# Only test README.md against CLI --help for Python 3.13+
+@pytest.mark.skipif(
+    sys.version_info < (3, 13),
+    reason="argparse changed output format in 3.13",
+)
+def test_readme_usage_help_matches_cli(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """Ensure README usage help block stays in sync with CLI --help output."""
+    readme_path = Path(__file__).resolve().parents[1] / "README.md"
+    readme_text = readme_path.read_text(encoding="utf-8")
+
+    match = re.search(
+        r"```text\n(usage: pyright-to-gitlab.*?)\n```", readme_text, flags=re.DOTALL
+    )
+    assert match, "Could not find Usage text block in README.md"
+
+    expected_block = match.group(1).replace("\r\n", "\n").strip()
+    expected_lines = expected_block.splitlines()
+    assert expected_lines, "Usage block in README.md is empty"
+
+    monkeypatch.setenv("COLUMNS", "120")
+    monkeypatch.setattr("sys.argv", ["pyright-to-gitlab", "--help"])
+    with pytest.raises(SystemExit, match="0"):
+        cli()
+
+    actual_help = capsys.readouterr().out.replace("\r\n", "\n").strip()
+    expected_help = "\n".join(expected_lines).strip()
+
+    actual_first, *actual_rest = actual_help.splitlines()
+    expected_first, *expected_rest = expected_help.splitlines()
+    assert actual_rest == expected_rest
+
+    # argparse may render different executable prefixes in "usage:" across platforms.
+    usage_pattern = re.compile(r"^usage:\s+.+?(\s+\[-h].*)$")
+    actual_usage = usage_pattern.match(actual_first)
+    expected_usage = usage_pattern.match(expected_first)
+    assert actual_usage
+    assert expected_usage
+    assert actual_usage.group(1) == expected_usage.group(1)
