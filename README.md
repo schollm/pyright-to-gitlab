@@ -10,30 +10,83 @@ Simple Python tool to convert Pyright JSON output to GitLab Code Quality report 
 
 **Zero runtime dependencies** - Pure Python implementation using only the standard library.
 
+## Install
+You can install the package from PyPI using pip:
+```shell
+pip install pyright-to-gitlab
+```
+
+Or make it available globally:
+* via `pipx`: 
+  ```shell
+  pipx install pyright-to-gitlab
+  ```
+* via `uv`: 
+  ```shell
+  uv tool install pyright-to-gitlab
+  ```
+As a one-time use, you can also run it directly with `uvx`:
+```shell
+uvx pyright-to-gitlab --help
+```
+
+Or download the single source file and run it with Python:
+```shell
+wget https://raw.githubusercontent.com/schollm/pyright-to-gitlab/refs/heads/main/src/pyright_to_gitlab.py -O pyright_to_gitlab.py
+python pyright_to_gitlab.py --help
+```
 
 ## Usage
-Run the script with the path to the pyright output file:
-```shell
-$ pip install pyright-to-gitlab
-$  pyright . --outputjson | pyright-to-gitlab > code-quality.json 
+
+```text
+pyright-to-gitlab --help
+usage: pyright-to-gitlab [-h] [-i INPUT] [-o OUTPUT] [--prefix PATH_PREFIX] [--version]
+
+Convert Pyright JSON output to a GitLab Code Quality report.
+
+Input defaults to stdin and output defaults to stdout.
+Use '-' explicitly for stdin/stdout when mixing with file paths.
+
+options:
+  -h, --help            show this help message and exit
+  -i, --input INPUT     Path to Pyright JSON input (default: -). Use - to read from stdin.
+  -o, --output OUTPUT   Path for GitLab Code Quality JSON (default: -). Use - to write to stdout.
+  --prefix PATH_PREFIX  Prefix added to each reported file path, e.g. 'backend/' for monorepos.
+  --version             show program's version number and exit
+
+Examples:
+  pyright . --outputjson | pyright-to-gitlab > gl-code-quality.json
+  pyright-to-gitlab -i pyright.json -o gl-code-quality.json
+  pyright-to-gitlab --prefix backend/ -i pyright.json -o -
+  pyright-to-gitlab -i pyright.json
 ```
 
-Alternatively, the module can be called:
+Convert from stdin to stdout (typical pipeline):
 ```shell
-$ pip install pyright-to-gitlab
-$  pyright . --outputjson | python -m pyright_to_gitlab > code-quality.json 
+pyright . --outputjson | pyright-to-gitlab > code-quality.json
 ```
+
+Convert from file to file:
+```shell
+pyright-to-gitlab -i pyright.json -o code-quality.json
+```
+
+Run as a module:
+```shell
+pyright . --outputjson | python -m pyright_to_gitlab > code-quality.json
+```
+
 ### Custom path prefix
 The `--prefix` option adds a custom prefix path to the file paths in the output. This is
-useful for mono-repos, where the paths in the pyright output is not the repository root.
+useful for mono-repos, where the paths in the pyright output are not the repository root.
 
 
 ```shell
-$  pyright . --outputjson | pyright-to-gitlab --prefix my-app > code-quality.json
+pyright . --outputjson | pyright-to-gitlab --prefix my-app > code-quality.json
 ```
-
-## Testing
+## Development
+### Testing
 To run the tests, execute
 ```shell
-$ uv run poe check
+uv run poe check
 ```
