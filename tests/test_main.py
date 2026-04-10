@@ -532,7 +532,7 @@ def test_version_flag(
 
 @pytest.mark.skipif(
     sys.version_info < (3, 13),
-    reason="argparse changed doutput format in 3.13",
+    reason="argparse changed output format in 3.13",
 )
 def test_readme_usage_help_matches_cli(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
@@ -550,6 +550,7 @@ def test_readme_usage_help_matches_cli(
     expected_lines = expected_block.splitlines()
     assert expected_lines, "Usage block in README.md is empty"
 
+    monkeypatch.setenv("COLUMNS", "120")
     monkeypatch.setattr("sys.argv", ["pyright-to-gitlab", "--help"])
     with pytest.raises(SystemExit, match="0"):
         cli()
@@ -557,9 +558,9 @@ def test_readme_usage_help_matches_cli(
     actual_help = capsys.readouterr().out.replace("\r\n", "\n").strip()
     expected_help = "\n".join(expected_lines).strip()
 
-    actual_first, *actual_lines = actual_help.splitlines()
-    expected_first, *expected_lines = expected_help.splitlines()
-    assert actual_lines == expected_lines
+    actual_first, *actual_rest = actual_help.splitlines()
+    expected_first, *expected_rest = expected_help.splitlines()
+    assert actual_rest == expected_rest
 
     # argparse may render different executable prefixes in "usage:" across platforms.
     usage_pattern = re.compile(r"^usage:\s+.+?(\s+\[-h].*)$")
