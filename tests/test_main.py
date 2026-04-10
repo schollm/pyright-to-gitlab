@@ -530,6 +530,7 @@ def test_version_flag(
     assert result.endswith(f"pyright_to_gitlab.py {version('pyright-to-gitlab')}\n")
 
 
+# Only test README.md against CLI --help for Python 3.13+
 @pytest.mark.skipif(
     sys.version_info < (3, 13),
     reason="argparse changed output format in 3.13",
