@@ -17,11 +17,11 @@ pip install pyright-to-gitlab
 ```
 
 Or make it available globally:
-* via `pipx`: 
+* via `pipx`:
   ```shell
   pipx install pyright-to-gitlab
   ```
-* via `uv`: 
+* via `uv`:
   ```shell
   uv tool install pyright-to-gitlab
   ```
@@ -39,7 +39,7 @@ python pyright_to_gitlab.py --help
 ## Usage
 
 ```shell
-$ pyright-to-gitlab --help
+pyright-to-gitlab --help
 ```
 Output:
 ```text
