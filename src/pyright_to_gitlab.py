@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Convert pyright.json output to GitLab Code Quality report format."""
 
 from __future__ import annotations
@@ -182,7 +183,7 @@ def cli() -> None:
               pyright . --outputjson | pyright-to-gitlab > gl-code-quality.json
               pyright-to-gitlab -i pyright.json -o gl-code-quality.json
               pyright-to-gitlab --prefix backend/ -i pyright.json -o -
-              pyright-to-gitlab -i pyright.json --indent 0
+              pyright-to-gitlab -i pyright.json
             """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
