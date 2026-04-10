@@ -38,8 +38,11 @@ python pyright_to_gitlab.py --help
 
 ## Usage
 
+```shell
+$ pyright-to-gitlab --help
+```
+Output:
 ```text
-pyright-to-gitlab --help
 usage: pyright-to-gitlab [-h] [-i INPUT] [-o OUTPUT] [--prefix PATH_PREFIX] [--version]
 
 Convert Pyright JSON output to a GitLab Code Quality report.

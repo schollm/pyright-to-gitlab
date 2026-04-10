@@ -543,7 +543,7 @@ def test_readme_usage_help_matches_cli(
     readme_text = readme_path.read_text(encoding="utf-8")
 
     match = re.search(
-        r"(usage: pyright-to-gitlab.*?)\n```", readme_text, flags=re.DOTALL
+        r"```text\n(usage: pyright-to-gitlab.*?)\n```", readme_text, flags=re.DOTALL
     )
     assert match, "Could not find Usage text block in README.md"
 
